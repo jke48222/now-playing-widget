@@ -50,8 +50,9 @@ Your `.p8`, tokens, and `musickit.json` stay on your machine and are never
 committed (see `.gitignore`). An Apple Developer Program membership is required.
 
 Note: `index.jsx` also checks an optional MediaRemote snapshot at
-`now-spinning/state.json` (written by a separate companion app, not included).
-If that path does not exist, the widget simply skips it — no action needed.
+`~/.config/widgetsuite/now-playing-state.json` (a JSON file you could have your
+own companion write for system-accurate artwork; none is included). If that file
+does not exist, the widget simply skips it — no action needed.
 
 ## How to edit
 
