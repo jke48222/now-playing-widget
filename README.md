@@ -13,7 +13,7 @@ playback happening on other devices (e.g. your iPhone).
 
 The widget shown running alongside the full set:
 
-<video src="https://github.com/jke48222/now-playing-widget/raw/main/homescreen.mp4" controls width="100%"></video>
+[![Homescreen demo — click to play](homescreen-poster.png)](homescreen.mp4)
 
 ## Install
 
