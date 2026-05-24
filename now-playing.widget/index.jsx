@@ -360,7 +360,9 @@ const resolve = (key, props, parse, mock) => {
 // Output fields are delimited by the ASCII Unit Separator (0x1F).
 export const command =
   `US=$(printf '\\037'); ` +
-  `S="$HOME/Library/Group Containers/group.com.jalenedusei.widgetsuite/now-spinning/state.json"; ` +
+  // Optional MediaRemote snapshot written by your own companion (not included).
+  // If the file is absent, this is skipped and the Music app path is used.
+  `S="$HOME/.config/widgetsuite/now-playing-state.json"; ` +
   `if [ -s "$S" ] && grep -q '"playing"[[:space:]]*:[[:space:]]*true' "$S"; then cat "$S"; exit 0; fi; ` +
   `INFO=$(osascript -e '` +
   `set d to (ASCII character 31)\n` +
