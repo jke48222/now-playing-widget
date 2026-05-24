@@ -347,15 +347,21 @@ const resolve = (key, props, parse, mock) => {
 
 // The current track as a tilted, continuously spinning vinyl record.
 //
-// Reads the macOS Music app via AppleScript and resolves cover art through the
-// public iTunes Search API (no auth). To get the correct sleeve, the album is
-// looked up first (entity=album), falling back to song artwork; combined artist
-// strings ("A & B", "A feat. B", "A, B") often miss, so each artist token is
-// also tried alone and a " - Single"/" - EP" album suffix is stripped. The
-// resolved art is cached per album so it only refetches when the album changes.
+// Source resolution, in priority order:
+//   1. A local companion's MediaRemote snapshot (now-spinning/state.json), used
+//      only while it reports active playback — carries the system's real art.
+//   2. The macOS Music app via AppleScript for the local track/state.
+//   3. When the Mac is not actively playing, the MusicKit helper's account-wide
+//      now-playing (e.g. playback on iPhone), which carries correct Apple Music art.
+//   4. Cover-art fallback via the iTunes Search API: the album is looked up
+//      first (entity=album), then song artwork; combined artist strings are also
+//      tried per token and a " - Single"/" - EP" album suffix stripped. Cached
+//      per album so it only refetches when the album changes.
 // Output fields are delimited by the ASCII Unit Separator (0x1F).
 export const command =
   `US=$(printf '\\037'); ` +
+  `S="$HOME/Library/Group Containers/group.com.jalenedusei.widgetsuite/now-spinning/state.json"; ` +
+  `if [ -s "$S" ] && grep -q '"playing"[[:space:]]*:[[:space:]]*true' "$S"; then cat "$S"; exit 0; fi; ` +
   `INFO=$(osascript -e '` +
   `set d to (ASCII character 31)\n` +
   `if application "Music" is running then\n` +
@@ -366,22 +372,33 @@ export const command =
   `  end tell\n` +
   `end if\n` +
   `return "idle"'); ` +
+  `case "$INFO" in ` +
+  `  idle|"") TRACK=""; ARTIST=""; ALBUM=""; STATE="";; ` +
+  `  *) TRACK=$(printf '%s' "$INFO" | cut -d"$US" -f1); ` +
+  `     ARTIST=$(printf '%s' "$INFO" | cut -d"$US" -f2); ` +
+  `     ALBUM=$(printf '%s' "$INFO" | cut -d"$US" -f3); ` +
+  `     STATE=$(printf '%s' "$INFO" | cut -d"$US" -f4);; ` +
+  `esac; ` +
+  // Mac not actively playing -> account-wide now-playing via MusicKit (correct art).
+  `if [ "$STATE" != "playing" ]; then ` +
+    `MK=$(/usr/bin/python3 "$HOME/.config/widgetsuite/musickit-fetch.py" --nowplaying "$TRACK" "$ARTIST" 2>/dev/null); ` +
+    `if [ -n "$MK" ]; then printf '%s' "$MK"; exit 0; fi; ` +
+  `fi; ` +
   `case "$INFO" in idle|"") printf '%s' "$INFO"; exit 0;; esac; ` +
-  `TRACK=$(printf '%s' "$INFO" | cut -d"$US" -f1); ` +
-  `ARTIST=$(printf '%s' "$INFO" | cut -d"$US" -f2); ` +
-  `ALBUM=$(printf '%s' "$INFO" | cut -d"$US" -f3); ` +
   `C="$HOME/Library/Caches/ws-nowplaying-art.txt"; PREV=$(cat "$C" 2>/dev/null); ` +
   `if [ "$(printf '%s' "$PREV" | cut -d"$US" -f1)" = "$ARTIST$ALBUM$TRACK" ] && [ -n "$ARTIST" ] && [ -n "$(printf '%s' "$PREV" | cut -d"$US" -f2)" ]; then ` +
     `ART=$(printf '%s' "$PREV" | cut -d"$US" -f2); ` +
   `else ` +
-    // art_of <term> <entity>: first artworkUrl100 match, upscaled to 600x600.
+    // Correct sleeve from Apple Music (MusicKit catalog) first.
+    `ART=$(/usr/bin/python3 "$HOME/.config/widgetsuite/musickit-fetch.py" --cover "$TRACK" "$ARTIST" "$ALBUM" 2>/dev/null); ` +
+    // iTunes Search fallback. art_of <term> <entity>: first artworkUrl100 match, upscaled to 600x600.
     `art_of(){ curl -s -G "https://itunes.apple.com/search" --data-urlencode "term=$1" -d "entity=$2&limit=1" ` +
     `| grep -o '"artworkUrl100":"[^"]*"' | head -1 | sed -e 's/^"artworkUrl100":"//' -e 's/"$//' | tr -d '\\\\' | sed 's/100x100bb/600x600bb/'; }; ` +
     `A1=$(printf '%s' "$ARTIST" | sed -E 's/ (&|x|feat\\.?|ft\\.?|,) .*//'); ` +
     `A2=$(printf '%s' "$ARTIST" | sed -E 's/.* (&|x|feat\\.?|ft\\.?|,) //'); ` +
     `ALBUMC=$(printf '%s' "$ALBUM" | sed -E 's/ - (Single|EP)$//'); ` +
     // Album artwork is the true sleeve; try it before song artwork.
-    `ART=$(art_of "$ARTIST $ALBUMC" album); ` +
+    `[ -z "$ART" ] && ART=$(art_of "$ARTIST $ALBUMC" album); ` +
     `[ -z "$ART" ] && [ "$A1" != "$ARTIST" ] && ART=$(art_of "$A1 $ALBUMC" album); ` +
     `[ -z "$ART" ] && ART=$(art_of "$ARTIST $TRACK" song); ` +
     `[ -z "$ART" ] && [ "$A2" != "$ARTIST" ] && ART=$(art_of "$A2 $TRACK" song); ` +
