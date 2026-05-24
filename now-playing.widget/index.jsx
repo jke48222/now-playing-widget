@@ -347,69 +347,92 @@ const resolve = (key, props, parse, mock) => {
 
 // The current track as a tilted, continuously spinning vinyl record.
 //
-// Source resolution, in priority order:
-//   1. A local companion's MediaRemote snapshot (now-spinning/state.json), used
+// Auto-detects the active player and resolves cover art, in priority order:
+//   1. A local companion's MediaRemote snapshot (now-playing-state.json), used
 //      only while it reports active playback — carries the system's real art.
-//   2. The macOS Music app via AppleScript for the local track/state.
-//   3. When the Mac is not actively playing, the MusicKit helper's account-wide
-//      now-playing (e.g. playback on iPhone), which carries correct Apple Music art.
-//   4. Cover-art fallback via the iTunes Search API: the album is looked up
-//      first (entity=album), then song artwork; combined artist strings are also
-//      tried per token and a " - Single"/" - EP" album suffix stripped. Cached
-//      per album so it only refetches when the album changes.
-// Output fields are delimited by the ASCII Unit Separator (0x1F).
+//   2. Spotify (if running) — AppleScript exposes the cover URL directly.
+//   3. The macOS Music app (if running) for the local track/state.
+//   4. For the Music app while the Mac is idle, the MusicKit helper's account-
+//      wide now-playing (e.g. playback on iPhone), with correct Apple Music art.
+//   5. Music-app cover fallback via the MusicKit catalog, then the iTunes Search
+//      API (album first, then song; cached per album).
+// Whichever of Spotify/Music is actively playing wins; a paused player is shown
+// when nothing is playing. Output fields use the ASCII Unit Separator (0x1F):
+// track, artist, album, state, art.
 export const command =
   `US=$(printf '\\037'); ` +
   // Optional MediaRemote snapshot written by your own companion (not included).
-  // If the file is absent, this is skipped and the Music app path is used.
   `S="$HOME/.config/widgetsuite/now-playing-state.json"; ` +
   `if [ -s "$S" ] && grep -q '"playing"[[:space:]]*:[[:space:]]*true' "$S"; then cat "$S"; exit 0; fi; ` +
+  // Pick the active player and return: track, artist, album, state, artURL.
+  // Spotify fills artURL directly; the Music app leaves it empty (resolved below).
   `INFO=$(osascript -e '` +
   `set d to (ASCII character 31)\n` +
+  `set sp to "stopped"\n` +
+  `set mu to "stopped"\n` +
+  `if application "Spotify" is running then\n` +
+  `  tell application "Spotify" to set sp to (player state as text)\n` +
+  `end if\n` +
   `if application "Music" is running then\n` +
+  `  tell application "Music" to set mu to (player state as text)\n` +
+  `end if\n` +
+  `set src to ""\n` +
+  `if sp is "playing" then\n` +
+  `  set src to "s"\n` +
+  `else if mu is "playing" then\n` +
+  `  set src to "m"\n` +
+  `else if mu is not "stopped" then\n` +
+  `  set src to "m"\n` +
+  `else if sp is not "stopped" then\n` +
+  `  set src to "s"\n` +
+  `end if\n` +
+  `if src is "s" then\n` +
+  `  tell application "Spotify"\n` +
+  `    set t to current track\n` +
+  `    return (name of t) & d & (artist of t) & d & (album of t) & d & sp & d & (artwork url of t)\n` +
+  `  end tell\n` +
+  `else if src is "m" then\n` +
   `  tell application "Music"\n` +
-  `    if player state is not stopped then\n` +
-  `      return (get name of current track) & d & (get artist of current track) & d & (get album of current track) & d & (player state as text)\n` +
-  `    end if\n` +
+  `    return (get name of current track) & d & (get artist of current track) & d & (get album of current track) & d & mu & d & ""\n` +
   `  end tell\n` +
   `end if\n` +
   `return "idle"'); ` +
-  `case "$INFO" in ` +
-  `  idle|"") TRACK=""; ARTIST=""; ALBUM=""; STATE="";; ` +
-  `  *) TRACK=$(printf '%s' "$INFO" | cut -d"$US" -f1); ` +
-  `     ARTIST=$(printf '%s' "$INFO" | cut -d"$US" -f2); ` +
-  `     ALBUM=$(printf '%s' "$INFO" | cut -d"$US" -f3); ` +
-  `     STATE=$(printf '%s' "$INFO" | cut -d"$US" -f4);; ` +
-  `esac; ` +
-  // Mac not actively playing -> account-wide now-playing via MusicKit (correct art).
-  `if [ "$STATE" != "playing" ]; then ` +
-    `MK=$(/usr/bin/python3 "$HOME/.config/widgetsuite/musickit-fetch.py" --nowplaying "$TRACK" "$ARTIST" 2>/dev/null); ` +
-    `if [ -n "$MK" ]; then printf '%s' "$MK"; exit 0; fi; ` +
-  `fi; ` +
   `case "$INFO" in idle|"") printf '%s' "$INFO"; exit 0;; esac; ` +
-  `C="$HOME/Library/Caches/ws-nowplaying-art.txt"; PREV=$(cat "$C" 2>/dev/null); ` +
-  `if [ "$(printf '%s' "$PREV" | cut -d"$US" -f1)" = "$ARTIST$ALBUM$TRACK" ] && [ -n "$ARTIST" ] && [ -n "$(printf '%s' "$PREV" | cut -d"$US" -f2)" ]; then ` +
-    `ART=$(printf '%s' "$PREV" | cut -d"$US" -f2); ` +
+  `TRACK=$(printf '%s' "$INFO" | cut -d"$US" -f1); ` +
+  `ARTIST=$(printf '%s' "$INFO" | cut -d"$US" -f2); ` +
+  `ALBUM=$(printf '%s' "$INFO" | cut -d"$US" -f3); ` +
+  `STATE=$(printf '%s' "$INFO" | cut -d"$US" -f4); ` +
+  `ARTURL=$(printf '%s' "$INFO" | cut -d"$US" -f5); ` +
+  `if [ -n "$ARTURL" ]; then ` +
+    // Spotify provides the cover URL straight from AppleScript.
+    `ART="$ARTURL"; ` +
   `else ` +
-    // Correct sleeve from Apple Music (MusicKit catalog) first.
-    `ART=$(/usr/bin/python3 "$HOME/.config/widgetsuite/musickit-fetch.py" --cover "$TRACK" "$ARTIST" "$ALBUM" 2>/dev/null); ` +
-    // iTunes Search fallback. art_of <term> <entity>: first artworkUrl100 match, upscaled to 600x600.
-    `art_of(){ curl -s -G "https://itunes.apple.com/search" --data-urlencode "term=$1" -d "entity=$2&limit=1" ` +
-    `| grep -o '"artworkUrl100":"[^"]*"' | head -1 | sed -e 's/^"artworkUrl100":"//' -e 's/"$//' | tr -d '\\\\' | sed 's/100x100bb/600x600bb/'; }; ` +
-    `A1=$(printf '%s' "$ARTIST" | sed -E 's/ (&|x|feat\\.?|ft\\.?|,) .*//'); ` +
-    `A2=$(printf '%s' "$ARTIST" | sed -E 's/.* (&|x|feat\\.?|ft\\.?|,) //'); ` +
-    `ALBUMC=$(printf '%s' "$ALBUM" | sed -E 's/ - (Single|EP)$//'); ` +
-    // Album artwork is the true sleeve; try it before song artwork.
-    `[ -z "$ART" ] && ART=$(art_of "$ARTIST $ALBUMC" album); ` +
-    `[ -z "$ART" ] && [ "$A1" != "$ARTIST" ] && ART=$(art_of "$A1 $ALBUMC" album); ` +
-    `[ -z "$ART" ] && ART=$(art_of "$ARTIST $TRACK" song); ` +
-    `[ -z "$ART" ] && [ "$A2" != "$ARTIST" ] && ART=$(art_of "$A2 $TRACK" song); ` +
-    `[ -z "$ART" ] && [ "$A1" != "$ARTIST" ] && ART=$(art_of "$A1 $TRACK" song); ` +
-    `[ -z "$ART" ] && ART=$(art_of "$TRACK" song); ` +
-    // Cache only on a hit, so a miss retries next refresh instead of sticking.
-    `[ -n "$ART" ] && printf '%s%s%s' "$ARTIST$ALBUM$TRACK" "$US" "$ART" > "$C"; ` +
+    // Music app, Mac idle -> account-wide now-playing via MusicKit (correct art).
+    `if [ "$STATE" != "playing" ]; then ` +
+      `MK=$(/usr/bin/python3 "$HOME/.config/widgetsuite/musickit-fetch.py" --nowplaying "$TRACK" "$ARTIST" 2>/dev/null); ` +
+      `if [ -n "$MK" ]; then printf '%s' "$MK"; exit 0; fi; ` +
+    `fi; ` +
+    `C="$HOME/Library/Caches/ws-nowplaying-art.txt"; PREV=$(cat "$C" 2>/dev/null); ` +
+    `if [ "$(printf '%s' "$PREV" | cut -d"$US" -f1)" = "$ARTIST$ALBUM$TRACK" ] && [ -n "$ARTIST" ] && [ -n "$(printf '%s' "$PREV" | cut -d"$US" -f2)" ]; then ` +
+      `ART=$(printf '%s' "$PREV" | cut -d"$US" -f2); ` +
+    `else ` +
+      // Correct sleeve from Apple Music (MusicKit catalog) first, then iTunes.
+      `ART=$(/usr/bin/python3 "$HOME/.config/widgetsuite/musickit-fetch.py" --cover "$TRACK" "$ARTIST" "$ALBUM" 2>/dev/null); ` +
+      `art_of(){ curl -s -G "https://itunes.apple.com/search" --data-urlencode "term=$1" -d "entity=$2&limit=1" ` +
+      `| grep -o '"artworkUrl100":"[^"]*"' | head -1 | sed -e 's/^"artworkUrl100":"//' -e 's/"$//' | tr -d '\\\\' | sed 's/100x100bb/600x600bb/'; }; ` +
+      `A1=$(printf '%s' "$ARTIST" | sed -E 's/ (&|x|feat\\.?|ft\\.?|,) .*//'); ` +
+      `A2=$(printf '%s' "$ARTIST" | sed -E 's/.* (&|x|feat\\.?|ft\\.?|,) //'); ` +
+      `ALBUMC=$(printf '%s' "$ALBUM" | sed -E 's/ - (Single|EP)$//'); ` +
+      `[ -z "$ART" ] && ART=$(art_of "$ARTIST $ALBUMC" album); ` +
+      `[ -z "$ART" ] && [ "$A1" != "$ARTIST" ] && ART=$(art_of "$A1 $ALBUMC" album); ` +
+      `[ -z "$ART" ] && ART=$(art_of "$ARTIST $TRACK" song); ` +
+      `[ -z "$ART" ] && [ "$A2" != "$ARTIST" ] && ART=$(art_of "$A2 $TRACK" song); ` +
+      `[ -z "$ART" ] && [ "$A1" != "$ARTIST" ] && ART=$(art_of "$A1 $TRACK" song); ` +
+      `[ -z "$ART" ] && ART=$(art_of "$TRACK" song); ` +
+      `[ -n "$ART" ] && printf '%s%s%s' "$ARTIST$ALBUM$TRACK" "$US" "$ART" > "$C"; ` +
+    `fi; ` +
   `fi; ` +
-  `printf '%s%s%s' "$INFO" "$US" "$ART"`;
+  `printf '%s%s%s%s%s%s%s%s%s' "$TRACK" "$US" "$ARTIST" "$US" "$ALBUM" "$US" "$STATE" "$US" "$ART"`;
 
 export const refreshFrequency = 1000 * 2; // pick up track / play-pause changes
 

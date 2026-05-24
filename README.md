@@ -3,9 +3,11 @@
 > The current track as a tilted, continuously spinning vinyl record.
 
 A widget for [Übersicht](http://tracesof.net/uebersicht/), self-contained in
-`index.jsx`. It reads the macOS Music app via AppleScript. Connect it to the
-Apple Music (MusicKit) API (below) for correct album artwork and to reflect
-playback happening on other devices (e.g. your iPhone).
+`index.jsx`. It auto-detects the active player — **Spotify or the macOS Music
+app** — via AppleScript (whichever is playing wins). Spotify needs no setup: its
+cover art comes straight from AppleScript. For the Music app, connect the Apple
+Music (MusicKit) API (below) for correct artwork and account-wide now-playing
+(e.g. playback on your iPhone).
 
 ![screenshot](screenshot.png)
 
@@ -23,15 +25,16 @@ The widget shown running alongside the full set:
    `~/Library/Application Support/Übersicht/widgets/`
 3. Refresh Übersicht (menu bar icon -> Refresh All).
 
-Without the MusicKit setup, the track comes from the Music app and the cover is
-resolved via the public iTunes Search API (a best-effort match).
+With no setup: Spotify works fully (cover from AppleScript), and the Music app
+shows the track with its cover resolved via the public iTunes Search API
+(best-effort). The MusicKit setup below only improves Music-app artwork.
 
-## Connect to Apple Music / MusicKit (optional)
+## Connect to Apple Music / MusicKit (optional, Music app only)
 
-The widget uses a local helper that calls the Apple Music API to (a) fetch the
+For the Music app, a local helper can call the Apple Music API to (a) fetch the
 correct catalog artwork for the playing track and (b) surface account-wide
 now-playing when the Mac itself is idle. When the helper is absent it falls back
-to the iTunes Search API, so this step is optional.
+to the iTunes Search API, so this step is optional. (Spotify does not use this.)
 
 1. Create the config directory and copy the helpers:
    ```sh
