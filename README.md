@@ -9,13 +9,13 @@ cover art comes straight from AppleScript. For the Music app, connect the Apple
 Music (MusicKit) API (below) for correct artwork and account-wide now-playing
 (e.g. playback on your iPhone).
 
-![screenshot](screenshot.png)
+![screenshot](media/screenshot.png)
 
 ### On the desktop
 
 The widget shown running alongside the full set:
 
-[![Homescreen demo — click to play](homescreen-poster.png)](homescreen.mp4)
+[![Homescreen demo — click to play](media/homescreen-poster.png)](media/homescreen.mp4)
 
 ## Install
 
