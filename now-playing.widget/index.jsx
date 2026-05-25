@@ -400,7 +400,13 @@ export const command =
   // If AppleScript was blocked by macOS Automation permission, surface it so the
   // widget can prompt the user to grant it instead of silently showing nothing.
   `if [ -z "$INFO" ] && grep -qiE 'not authoriz|-1743|-10004|execution error' "$HOME/Library/Caches/ws-np.err" 2>/dev/null; then printf '__PERM__'; exit 0; fi; ` +
-  `case "$INFO" in idle|"") printf '%s' "$INFO"; exit 0;; esac; ` +
+  // Nothing playing on the Mac: fall back to the account's most recently played
+  // track (with real Apple Music artwork), the same source the album mosaic
+  // uses, so the widget shows your last listen instead of a placeholder.
+  `case "$INFO" in idle|"") ` +
+    `RC=$(/usr/bin/python3 "$HOME/.config/widgetsuite/musickit-fetch.py" --recent 2>/dev/null); ` +
+    `if [ -n "$RC" ]; then printf '%s' "$RC"; else printf '%s' "$INFO"; fi; exit 0;; ` +
+  `esac; ` +
   `TRACK=$(printf '%s' "$INFO" | cut -d"$US" -f1); ` +
   `ARTIST=$(printf '%s' "$INFO" | cut -d"$US" -f2); ` +
   `ALBUM=$(printf '%s' "$INFO" | cut -d"$US" -f3); ` +
