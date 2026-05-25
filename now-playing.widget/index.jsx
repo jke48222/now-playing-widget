@@ -396,7 +396,10 @@ export const command =
   `    return (get name of current track) & d & (get artist of current track) & d & (get album of current track) & d & mu & d & ""\n` +
   `  end tell\n` +
   `end if\n` +
-  `return "idle"'); ` +
+  `return "idle"' 2>"$HOME/Library/Caches/ws-np.err"); ` +
+  // If AppleScript was blocked by macOS Automation permission, surface it so the
+  // widget can prompt the user to grant it instead of silently showing nothing.
+  `if [ -z "$INFO" ] && grep -qiE 'not authoriz|-1743|-10004|execution error' "$HOME/Library/Caches/ws-np.err" 2>/dev/null; then printf '__PERM__'; exit 0; fi; ` +
   `case "$INFO" in idle|"") printf '%s' "$INFO"; exit 0;; esac; ` +
   `TRACK=$(printf '%s' "$INFO" | cut -d"$US" -f1); ` +
   `ARTIST=$(printf '%s' "$INFO" | cut -d"$US" -f2); ` +
@@ -523,8 +526,28 @@ const ensureSpin = () => {
   }, 16);
 };
 
+// Shown when macOS has not granted Übersicht permission to read the active
+// player (System Settings > Privacy & Security > Automation), and there is no
+// cached track to fall back to. Clicking opens the right settings pane.
+const PermNotice = () =>
+  h("div", {
+    onClick: () => run("open 'x-apple.systempreferences:com.apple.preference.security?Privacy_Automation'"),
+    style: {
+      width: D, height: D, borderRadius: "16px", cursor: "pointer",
+      display: "flex", alignItems: "center", justifyContent: "center",
+      textAlign: "center", padding: "16px", boxSizing: "border-box",
+      background: "rgba(20,20,28,0.55)", backdropFilter: "blur(8px)",
+      color: T.onDarkDim, fontFamily: mono, fontSize: "9px", lineHeight: 1.5,
+      letterSpacing: "0.5px",
+    },
+  }, "Allow Übersicht to control Music in System Settings → Automation");
+
 export const render = (props) => {
   if (isLoading(props)) return <Skel tint={T.tintPink} />;
+  // Permission blocked and nothing cached: tell the user how to fix it.
+  if ((props.output || "").trim() === "__PERM__" && !(recall("nowspinning") || {}).data) {
+    return <PermNotice />;
+  }
   // Remember each track (with its cover); when playback stops, show the last
   // known record sitting still rather than reverting to the mock.
   let m = parse(props.output);
