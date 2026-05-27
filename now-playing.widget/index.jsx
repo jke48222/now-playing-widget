@@ -516,7 +516,6 @@ const artSrc = (m) =>
 // the previous interval, so a module-scoped guard cannot stop the old timer.
 // Keying off `window` lets each reload cancel the prior timer and resume from
 // the same angle, avoiding stacked timers fighting over the transform.
-let SPIN_PLAYING = true;
 const REDUCED = typeof window !== "undefined" && window.matchMedia &&
   window.matchMedia("(prefers-reduced-motion: reduce)").matches;
 
@@ -527,7 +526,8 @@ const ensureSpin = () => {
   window.__wsSpinTimer = setInterval(() => {
     const el = document.getElementById("ws-vinyl");
     if (!el) return;
-    if (SPIN_PLAYING && !REDUCED) window.__wsSpinAngle = (window.__wsSpinAngle + 1.5) % 360;
+    // Always rotate (like the spinning globe), regardless of play state.
+    if (!REDUCED) window.__wsSpinAngle = (window.__wsSpinAngle + 1.5) % 360;
     el.style.transform = "rotate(" + window.__wsSpinAngle + "deg)";
   }, 16);
 };
@@ -564,7 +564,6 @@ export const render = (props) => {
     m = cached && cached.data ? { ...cached.data, playing: false } : MOCK;
   }
   const stamp = (m.album || m.track || "").split(" ")[0];
-  SPIN_PLAYING = m.playing;
   ensureSpin();
 
   return (
