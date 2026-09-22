@@ -1,6 +1,6 @@
 # now-playing
 
-> The current track on a Braun-style record player: the record spins and the tonearm swings on while it plays.
+> The current track as a tilted, continuously spinning vinyl record.
 
 [![Release](https://img.shields.io/github/v/release/jke48222/now-playing-widget?label=release)](https://github.com/jke48222/now-playing-widget/releases/latest) [![License: MIT](https://img.shields.io/github/license/jke48222/now-playing-widget)](LICENSE) ![Platform: macOS](https://img.shields.io/badge/platform-macOS-lightgrey)
 
@@ -15,17 +15,13 @@ Music (MusicKit) API (below) for correct artwork and account-wide now-playing
 
 ![screenshot](media/screenshot.png)
 
-The widget is a Braun SK 4 style record player (Rams and Gugelot, 1956): a cream enamel case with elm-veneer sides, a grey platter under a clear acrylic lid, a straight tonearm that swings onto the record while something plays, five small keys (the on key really pauses and resumes the player), a tuning scale with a red pointer, a standby lamp, and a slotted grille beside the track readout. Typeface: Inter. All fonts are under the SIL Open Font License; see `now-playing.widget/fonts/OFL.txt`.
-
-## Before and after
-
-![Before and after](media/before-after.png)
-
 ### On the desktop
 
 The widget running alongside the full set:
 
-![The Übersicht widget suite composed on one desktop](https://raw.githubusercontent.com/jke48222/widget-suite/main/homescreen.png)
+![The Übersicht widget suite running on a desktop](https://raw.githubusercontent.com/jke48222/widget-suite/main/homescreen.gif)
+
+[Full-resolution video](media/homescreen.mp4)
 
 ## Requirements
 
@@ -105,23 +101,19 @@ does not exist, the widget simply skips it — no action needed.
 
 ## Related widgets
 
-Part of the [Übersicht Widget Suite](https://github.com/jke48222/widget-suite): 16 widgets that share one design system.
+Part of the [Übersicht Widget Suite](https://github.com/jke48222/widget-suite): 12 widgets that share one design system.
 
-- [Agent Fleet](https://github.com/jke48222/agent-fleet-widget)
 - [Animated Wallpaper](https://github.com/jke48222/animated-wallpaper-widget)
 - [Clipboard History](https://github.com/jke48222/clipboard-history-widget)
 - [Daily AI Prompt](https://github.com/jke48222/daily-ai-prompt-widget)
 - [Daily Astronomy Photo](https://github.com/jke48222/daily-astronomy-photo-widget)
 - [Daily Tarot](https://github.com/jke48222/daily-tarot-widget)
 - [GitHub Contributions](https://github.com/jke48222/github-contributions-widget)
-- [Keys & Pads](https://github.com/jke48222/keys-and-pads-widget)
-- [Pi Fleet](https://github.com/jke48222/pi-fleet-widget)
 - [Recent Album Covers](https://github.com/jke48222/recent-album-covers-widget)
 - [Recent Downloads](https://github.com/jke48222/recent-downloads-widget)
 - [Rotating 3D Model](https://github.com/jke48222/rotating-3d-model-widget)
 - [Spinning Globe](https://github.com/jke48222/spinning-globe-widget)
 - [Wallpaper Switcher](https://github.com/jke48222/wallpaper-switcher-widget)
-- [Window Pet](https://github.com/jke48222/window-pet-widget)
 
 ## License
 

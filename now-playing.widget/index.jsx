@@ -131,7 +131,7 @@ const card = (variant, w, h, x = 0, y = 0) => `
   .ws-drag  { position:absolute; top:6px; left:6px; z-index:30;
               width:18px; height:18px; border-radius:6px;
               display:flex; align-items:center; justify-content:center;
-              font-size:11px; line-height:1; cursor:grab; opacity:0.42;
+              font-size:11px; line-height:1; cursor:grab; opacity:0.22;
               transition:opacity .15s ease; user-select:none;
               -webkit-user-select:none;
               color:${variant === "dark" ? T.onDarkMute : T.inkMute};
@@ -143,7 +143,7 @@ const card = (variant, w, h, x = 0, y = 0) => `
   .ws-resize { position:absolute; bottom:5px; right:5px; z-index:30;
                width:16px; height:16px; border-radius:5px;
                display:flex; align-items:center; justify-content:center;
-               font-size:11px; line-height:1; cursor:nwse-resize; opacity:0.42;
+               font-size:11px; line-height:1; cursor:nwse-resize; opacity:0.22;
                transition:opacity .15s ease; user-select:none;
                -webkit-user-select:none;
                color:${variant === "dark" ? T.onDarkMute : T.inkMute};
@@ -445,63 +445,39 @@ export const command =
 
 export const refreshFrequency = 1000 * 2; // pick up track / play-pause changes
 
-const D = 108;
-const FONTS = "now-playing.widget/fonts";
-// After the Braun SK 4 (Rams and Gugelot, 1956): a cream enamel box with
-// elm-veneer sides, a plain grey platter under a clear acrylic lid, a slim
-// straight arm, a row of small grey keys, a tuning scale, and a slotted
-// grille on the front. The record spins and the arm swings on while a track
-// plays; the "on" key really pauses and resumes the player.
-export const className = card("light", 340, 238, ...LAYOUT.nowSpinning) + `
-  @font-face { font-family: "Inter"; src: url("${FONTS}/Inter-500.woff2") format("woff2"); font-weight: 500; }
-  @font-face { font-family: "Inter"; src: url("${FONTS}/Inter-600.woff2") format("woff2"); font-weight: 600; }
-  @font-face { font-family: "Inter"; src: url("${FONTS}/Inter-800.woff2") format("woff2"); font-weight: 800; }
-  --ui: "Inter", -apple-system, "Helvetica Neue", sans-serif; --cream: #F3F0E8; --cream2: #E9E5DB;
-  padding: 0; border-radius: 6px; backdrop-filter: none; overflow: hidden; user-select:none; -webkit-user-select:none;
-  background: linear-gradient(180deg, #F6F3EC 0%, var(--cream) 62%, var(--cream2) 100%);
-  box-shadow: 0 30px 50px rgba(0,0,0,0.42), inset 0 1px 0 #FFFFFF, 0 0 0 1px #C8C3B7;
-  .ws-drag { top: 8px; left: 30px; color:#8a8680; background: rgba(0,0,0,0.05); } .ws-resize { bottom: 8px; right: 30px; color:#8a8680; background: rgba(0,0,0,0.05); }
-  .side { position:absolute; top:0; bottom:0; width: 22px; background: linear-gradient(90deg, #D5A76A 0%, #B98346 42%, #CB9C5E 70%, #B27C40 100%); box-shadow: inset 0 0 0 1px rgba(0,0,0,0.15); }
-  .side::after { content:""; position:absolute; inset:0; opacity:0.55; background: repeating-linear-gradient(0deg, rgba(60,30,0,0.16) 0 1px, rgba(0,0,0,0) 1px 4px, rgba(60,30,0,0.08) 4px 5px, rgba(0,0,0,0) 5px 9px); }
-  .side.l { left:0; border-radius: 6px 0 0 6px; } .side.r { right:0; border-radius: 0 6px 6px 0; }
-  .deck { position:absolute; left: 22px; right: 22px; top: 0; height: 156px; border-bottom: 1px solid #D6D2C8; }
-  .platter { position:absolute; left: 20px; top: 20px; width: 124px; height: 124px; border-radius: 50%; background: radial-gradient(circle at 50% 50%, #D9D6CE 0 30%, #CFCBC2 31% 100%);
-             box-shadow: inset 0 0 0 1px #B9B5AB, 0 2px 4px rgba(0,0,0,0.18); }
-  .platter::before { content:""; position:absolute; inset: 6px; border-radius: 50%; background: repeating-radial-gradient(circle at 50% 50%, rgba(0,0,0,0.05) 0 1px, rgba(0,0,0,0) 1px 4px); }
-  .vinyl  { position:absolute; left: 8px; top: 8px; width: ${D}px; height: ${D}px; border-radius:50%; background: radial-gradient(circle at 34% 26%, rgba(255,255,255,0.08), transparent 55%), #121214; box-shadow: 0 2px 5px rgba(0,0,0,0.45); }
-  .groove { position:absolute; border-radius:50%; border:1px solid rgba(255,255,255,0.05); top:50%; left:50%; transform:translate(-50%,-50%); }
-  .label  { position:absolute; top:50%; left:50%; width: 40px; height: 40px; transform:translate(-50%,-50%); border-radius:50%; overflow:hidden; display:flex; align-items:center; justify-content:center; font: 800 7px/1 var(--ui); color:#fff; text-transform:lowercase; box-shadow: inset 0 0 0 1px rgba(0,0,0,0.4); }
+const D = 128;
+export const className = card("dark", 176, 176, ...LAYOUT.nowSpinning) + `
+  background: transparent; box-shadow: none; backdrop-filter: none; overflow: visible;
+  padding: 0; display: flex; align-items: center; justify-content: center;
+  .stage  { position:relative; width:${D}px; height:${D}px;
+            display:flex; align-items:center; justify-content:center; }
+  .backlight { position:absolute; inset:10px; border-radius:50%; pointer-events:none;
+            background: radial-gradient(circle at 50% 45%,
+                          rgba(255,255,255,0.16), transparent 64%);
+            filter: blur(12px); }
+  .tilt   { position:relative; width:${D}px; height:${D}px; transform: rotate(-15deg);
+            filter: drop-shadow(0 14px 26px rgba(0,0,0,0.55))
+                    drop-shadow(0 3px 6px rgba(0,0,0,0.4)); }
+  .vinyl  { position:relative; width:${D}px; height:${D}px; border-radius:50%;
+            background: radial-gradient(circle at 32% 24%, rgba(255,255,255,0.07), transparent 58%),
+                        radial-gradient(circle at 68% 80%, rgba(0,0,0,0.6), transparent 55%),
+                        #0b0b0e; }
+  .groove { position:absolute; border-radius:50%; border:1px solid rgba(255,255,255,0.06);
+            top:50%; left:50%; transform:translate(-50%,-50%); }
+  .label  { position:absolute; top:50%; left:50%; width:${D * 0.41}px; height:${D * 0.41}px;
+            transform:translate(-50%,-50%); border-radius:50%; overflow:hidden;
+            display:flex; align-items:center; justify-content:center;
+            font-family:${mono}; font-size:8px; font-weight:700; letter-spacing:0.5px;
+            text-transform:uppercase; color:#fff;
+            box-shadow: inset 0 0 0 1.5px rgba(0,0,0,0.45),
+                        inset 3px 3px 6px rgba(255,255,255,0.35); }
   .art    { width:100%; height:100%; object-fit:cover; }
-  .spindle { position:absolute; left: 50%; top: 50%; width: 6px; height: 6px; margin: -3px 0 0 -3px; border-radius: 50%; background: radial-gradient(circle at 40% 35%, #f6f6f4, #9a9a94 70%); box-shadow: 0 1px 1px rgba(0,0,0,0.6); z-index: 3; }
-  .armbase { position:absolute; left: 176px; top: 16px; width: 18px; height: 18px; border-radius: 50%; background: radial-gradient(circle at 40% 35%, #E4E2DC, #9F9C94 70%); box-shadow: 0 2px 3px rgba(0,0,0,0.3), inset 0 0 0 1px #8A877F; }
-  .arm { position:absolute; left: 184px; top: 25px; width: 3px; height: 100px; transform-origin: 50% 0; transform: rotate(var(--arm, 10deg)); transition: transform 1.6s cubic-bezier(.45,0,.2,1);
-         background: linear-gradient(90deg, #B9B7B0, #F2F1EC 55%, #A5A39C); border-radius: 2px; box-shadow: 1px 2px 3px rgba(0,0,0,0.35); z-index: 4; }
-  .arm::after { content:""; position:absolute; left:-4px; bottom:-10px; width: 11px; height: 16px; border-radius: 2px; background: linear-gradient(180deg, #DAD8D1, #9C9A93); box-shadow: 0 1px 2px rgba(0,0,0,0.4); }
-  .rest { position:absolute; left: 164px; top: 116px; width: 10px; height: 14px; border-radius: 2px; background: #C2BFB6; box-shadow: inset 0 0 0 1px #9E9B93; }
-  .keys { position:absolute; left: 196px; top: 22px; display:flex; gap: 6px; }
-  .key { width: 13px; height: 22px; border-radius: 2px; cursor:pointer; background: linear-gradient(180deg, #D9D6CE, #BDB9AF); box-shadow: 0 2px 0 #8F8C84, 0 3px 3px rgba(0,0,0,0.25), inset 0 1px 0 rgba(255,255,255,0.7); transition: transform .06s, box-shadow .06s; }
-  .key.down, .key:active { transform: translateY(2px); box-shadow: 0 0 0 #8F8C84, 0 1px 2px rgba(0,0,0,0.3), inset 0 1px 0 rgba(255,255,255,0.7); background: linear-gradient(180deg, #C9C5BC, #ADA9A0); }
-  .key.red { background: linear-gradient(180deg, #E5563E, #B8331F); box-shadow: 0 2px 0 #7A1E12, 0 3px 3px rgba(0,0,0,0.25), inset 0 1px 0 rgba(255,255,255,0.35); }
-  .klabels { position:absolute; left: 196px; top: 48px; display:flex; gap: 6px; }
-  .klabels span { width: 13px; text-align:center; font: 500 6px/1 var(--ui); color: #7B7872; letter-spacing: 0.2px; }
-  .scale { position:absolute; left: 196px; top: 74px; width: 90px; height: 20px; background: #FBFAF6; box-shadow: inset 0 0 0 1px #C8C4BA; overflow:hidden; }
-  .scale i { position:absolute; bottom: 0; width: 1px; height: 5px; background: #8B8880; } .scale i.t { height: 9px; }
-  .scale b { position:absolute; top: 3px; font: 500 6px/1 var(--ui); color:#7B7872; }
-  .scale em { position:absolute; top: 0; bottom: 0; width: 1.5px; background: #D9432B; left: var(--needle, 38%); transition: left 1.2s ease; }
-  .lamp { position:absolute; left: 196px; top: 104px; width: 6px; height: 6px; border-radius: 50%; background: #C9C5BC; box-shadow: inset 0 1px 1px rgba(0,0,0,0.25); }
-  .lamp.on { background: #E5563E; box-shadow: 0 0 6px rgba(229,86,62,0.8); }
-  .lamptxt { position:absolute; left: 206px; top: 103px; font: 500 7px/1 var(--ui); color: #7B7872; letter-spacing: 0.3px; }
-  .lid { position:absolute; left: 24px; right: 24px; top: 4px; height: 148px; border-radius: 3px; pointer-events:none;
-         background: linear-gradient(112deg, rgba(255,255,255,0.32) 0%, rgba(255,255,255,0.05) 34%, rgba(255,255,255,0.02) 55%, rgba(255,255,255,0.18) 100%);
-         box-shadow: inset 0 0 0 1px rgba(255,255,255,0.75), inset 0 -1px 0 rgba(0,0,0,0.08), 0 3px 8px rgba(0,0,0,0.10); }
-  .lid::after { content:""; position:absolute; left: 18%; top: -10%; width: 22%; height: 130%; transform: rotate(18deg); background: linear-gradient(90deg, rgba(255,255,255,0) 0%, rgba(255,255,255,0.22) 50%, rgba(255,255,255,0) 100%); }
-  .front { position:absolute; left: 22px; right: 22px; bottom: 0; height: 82px; }
-  .grille { position:absolute; left: 20px; top: 16px; width: 124px; height: 50px; border-radius: 2px; background: repeating-linear-gradient(0deg, #C4C0B6 0 2px, rgba(0,0,0,0) 2px 6px); box-shadow: inset 0 0 0 1px rgba(0,0,0,0.05); }
-  .readout { position:absolute; left: 186px; right: 12px; top: 14px; }
-  .track { font: 600 11px/1.25 var(--ui); color: #2B2A27; letter-spacing: -0.1px; text-transform: lowercase; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
-  .artist { margin-top: 3px; font: 500 9px/1.2 var(--ui); color: #7B7872; text-transform: lowercase; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
-  .logo { position:absolute; right: 12px; bottom: 12px; font: 800 9px/1 var(--ui); letter-spacing: -0.3px; color: #6B6862; text-transform: lowercase; }
+  .sheen  { position:absolute; top:50%; left:50%; width:${D}px; height:${D}px;
+            transform:translate(-50%,-50%); border-radius:50%; pointer-events:none;
+            background: radial-gradient(120px at 30% 20%, rgba(255,255,255,0.22), transparent 55%),
+                        linear-gradient(125deg, rgba(255,255,255,0.10) 0%, transparent 38%); }
 `;
+
 const MOCK = {
   track: "Cassette Light", artist: "Field of Margins", album: "Halcyon · 2025",
   playing: true, art: null,
@@ -550,8 +526,8 @@ const ensureSpin = () => {
   window.__wsSpinTimer = setInterval(() => {
     const el = document.getElementById("ws-vinyl");
     if (!el) return;
-    // Spin only while the platter is running (data-playing), like a real deck.
-    if (!REDUCED && el.dataset.playing === "1") window.__wsSpinAngle = (window.__wsSpinAngle + 1.5) % 360;
+    // Always rotate (like the spinning globe), regardless of play state.
+    if (!REDUCED) window.__wsSpinAngle = (window.__wsSpinAngle + 1.5) % 360;
     el.style.transform = "rotate(" + window.__wsSpinAngle + "deg)";
   }, 16);
 };
@@ -572,47 +548,42 @@ const PermNotice = () =>
     },
   }, "Allow Übersicht to control Music in System Settings → Automation");
 
-// Start/stop pauses and resumes whichever player is running; the refresh
-// picks up the new state within two seconds and swings the arm.
-const PLAYPAUSE = `osascript -e 'if application "Spotify" is running then' -e 'tell application "Spotify" to playpause' -e 'else if application "Music" is running then' -e 'tell application "Music" to playpause' -e 'end if' >/dev/null 2>&1`;
-const TICKS = Array.from({ length: 21 }, (_, i) => i);
 export const render = (props) => {
   if (isLoading(props)) return <Skel tint={T.tintPink} />;
-  if ((props.output || "").trim() === "__PERM__" && !(recall("nowspinning") || {}).data) return <PermNotice />;
+  // Permission blocked and nothing cached: tell the user how to fix it.
+  if ((props.output || "").trim() === "__PERM__" && !(recall("nowspinning") || {}).data) {
+    return <PermNotice />;
+  }
+  // Remember each track (with its cover); when playback stops, show the last
+  // known record sitting still rather than reverting to the mock.
   let m = parse(props.output);
-  if (m && m.art) remember("nowspinning", m);
-  else if (!m) { const cached = recall("nowspinning"); m = cached && cached.data ? { ...cached.data, playing: false } : MOCK; }
+  if (m && m.art) {
+    remember("nowspinning", m);
+  } else if (!m) {
+    const cached = recall("nowspinning");
+    m = cached && cached.data ? { ...cached.data, playing: false } : MOCK;
+  }
   const stamp = (m.album || m.track || "").split(" ")[0];
   ensureSpin();
+
   return (
-    <div aria-label={`Now playing: ${m.track} by ${m.artist}`} style={{ "--arm": m.playing ? "55deg" : "10deg", "--needle": m.playing ? "62%" : "38%" }}>
-      <div className="side l" /><div className="side r" />
-      <div className="deck">
-        <div className="platter">
-          <div id="ws-vinyl" className="vinyl" data-playing={m.playing ? "1" : "0"}>
-            <div className="groove" style={{ width: D * 0.88, height: D * 0.88 }} /><div className="groove" style={{ width: D * 0.72, height: D * 0.72 }} /><div className="groove" style={{ width: D * 0.56, height: D * 0.56 }} />
-            <div className="label" style={{ background: m.art ? "#000" : "#D9432B" }}>{m.art ? <img className="art" src={artSrc(m)} /> : stamp}</div>
-          </div>
-          <div className="spindle" />
-        </div>
-        <div className="rest" /><div className="armbase" /><div className="arm" />
-        <div className="keys">
-          <span className="key" title="Stop" onClick={() => m.playing && run(PLAYPAUSE)} />
-          <span className={`key ${m.playing ? "down" : ""}`} title={m.playing ? "Pause" : "Play"} onClick={() => run(PLAYPAUSE)} />
-          <span className="key down" title="33 rpm" /><span className="key" title="45 rpm" /><span className="key red" title="Off" />
-        </div>
-        <div className="klabels"><span>stop</span><span>on</span><span>33</span><span>45</span><span>aus</span></div>
-        <div className="scale">{TICKS.map((i) => <i key={i} className={i % 5 === 0 ? "t" : ""} style={{ left: `${3 + i * 4.2}px` }} />)}{[0, 1, 2, 3, 4].map((i) => <b key={i} style={{ left: `${2 + i * 19.5}px` }}>{i * 25}</b>)}<em /></div>
-        <div className={`lamp ${m.playing ? "on" : ""}`} /><span className="lamptxt">{m.playing ? "playing" : "standby"}</span>
-      </div>
-      <div className="lid" />
-      <div className="front">
-        <div className="grille" />
-        <div className="readout"><div className="track">{m.track}</div><div className="artist">{m.artist}{m.album ? ` · ${m.album}` : ""}</div></div>
-        <div className="logo">now playing</div>
-      </div>
+    <div aria-label={`Now playing: ${m.track} by ${m.artist}`}>
       <DragHandle k="nowSpinning" />
       <ResizeHandle k="nowSpinning" />
+      <div className="stage">
+        <div className="backlight" />
+        <div className="tilt">
+          <div id="ws-vinyl" className="vinyl">
+            <div className="groove" style={{ width: D * 0.88, height: D * 0.88 }} />
+            <div className="groove" style={{ width: D * 0.73, height: D * 0.73 }} />
+            <div className="groove" style={{ width: D * 0.58, height: D * 0.58 }} />
+            <div className="label" style={{ background: m.art ? "#000" : T.tintOrange }}>
+              {m.art ? <img className="art" src={artSrc(m)} /> : stamp}
+            </div>
+          </div>
+          <div className="sheen" />
+        </div>
+      </div>
     </div>
   );
 };
