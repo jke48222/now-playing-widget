@@ -15,13 +15,17 @@ Music (MusicKit) API (below) for correct artwork and account-wide now-playing
 
 ![screenshot](media/screenshot.png)
 
+The widget is a direct-drive deck: a matte plinth with a bevelled edge, a platter with a strobe ring, the record as the mat with the sleeve for its label, a tonearm that swings onto the groove while something plays, a start/stop button that pauses and resumes the player, a pitch fader, and a slim readout strip. Typefaces: Michroma and Barlow Condensed. All fonts are under the SIL Open Font License; see `now-playing.widget/fonts/OFL.txt`.
+
+## Before and after
+
+![Before and after](media/before-after.png)
+
 ### On the desktop
 
 The widget running alongside the full set:
 
-![The Übersicht widget suite running on a desktop](https://raw.githubusercontent.com/jke48222/widget-suite/main/homescreen.gif)
-
-[Full-resolution video](media/homescreen.mp4)
+![The Übersicht widget suite composed on one desktop](https://raw.githubusercontent.com/jke48222/widget-suite/main/homescreen.png)
 
 ## Requirements
 

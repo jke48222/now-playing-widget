@@ -131,7 +131,7 @@ const card = (variant, w, h, x = 0, y = 0) => `
   .ws-drag  { position:absolute; top:6px; left:6px; z-index:30;
               width:18px; height:18px; border-radius:6px;
               display:flex; align-items:center; justify-content:center;
-              font-size:11px; line-height:1; cursor:grab; opacity:0.22;
+              font-size:11px; line-height:1; cursor:grab; opacity:0.42;
               transition:opacity .15s ease; user-select:none;
               -webkit-user-select:none;
               color:${variant === "dark" ? T.onDarkMute : T.inkMute};
@@ -143,7 +143,7 @@ const card = (variant, w, h, x = 0, y = 0) => `
   .ws-resize { position:absolute; bottom:5px; right:5px; z-index:30;
                width:16px; height:16px; border-radius:5px;
                display:flex; align-items:center; justify-content:center;
-               font-size:11px; line-height:1; cursor:nwse-resize; opacity:0.22;
+               font-size:11px; line-height:1; cursor:nwse-resize; opacity:0.42;
                transition:opacity .15s ease; user-select:none;
                -webkit-user-select:none;
                color:${variant === "dark" ? T.onDarkMute : T.inkMute};
@@ -446,38 +446,61 @@ export const command =
 export const refreshFrequency = 1000 * 2; // pick up track / play-pause changes
 
 const D = 128;
-export const className = card("dark", 176, 176, ...LAYOUT.nowSpinning) + `
-  background: transparent; box-shadow: none; backdrop-filter: none; overflow: visible;
-  padding: 0; display: flex; align-items: center; justify-content: center;
-  .stage  { position:relative; width:${D}px; height:${D}px;
-            display:flex; align-items:center; justify-content:center; }
-  .backlight { position:absolute; inset:10px; border-radius:50%; pointer-events:none;
-            background: radial-gradient(circle at 50% 45%,
-                          rgba(255,255,255,0.16), transparent 64%);
-            filter: blur(12px); }
-  .tilt   { position:relative; width:${D}px; height:${D}px; transform: rotate(-15deg);
-            filter: drop-shadow(0 14px 26px rgba(0,0,0,0.55))
-                    drop-shadow(0 3px 6px rgba(0,0,0,0.4)); }
-  .vinyl  { position:relative; width:${D}px; height:${D}px; border-radius:50%;
+const FONTS = "now-playing.widget/fonts";
+// A direct-drive deck: matte plinth with a bevelled edge, a platter with a
+// strobe ring, the record as the platter mat with the sleeve as its label, a
+// tonearm that swings onto the groove when something is playing, a start/stop
+// button that actually pauses and resumes, and a slim readout strip.
+export const className = card("dark", 300, 236, ...LAYOUT.nowSpinning) + `
+  @font-face { font-family: "Michroma"; src: url("${FONTS}/Michroma-400.woff2") format("woff2"); }
+  @font-face { font-family: "Barlow Condensed"; src: url("${FONTS}/BarlowCondensed-600.woff2") format("woff2"); font-weight: 600; }
+  --cond: "Barlow Condensed", "Arial Narrow", sans-serif;
+  padding: 0; border-radius: 14px; backdrop-filter: none; overflow: hidden; user-select:none; -webkit-user-select:none;
+  background: linear-gradient(180deg, #2B2C30 0%, #1B1C1F 7%, #141518 90%, #0E0F11 100%);
+  box-shadow: 0 30px 60px rgba(0,0,0,0.55), inset 0 1px 0 rgba(255,255,255,0.10), inset 0 0 0 2px #26272B, 0 0 0 1px #050506;
+  .ws-drag { top: 8px; left: 8px; } .ws-resize { bottom: 6px; right: 6px; }
+  .platter { position:absolute; left: 18px; top: 24px; width: 160px; height: 160px; border-radius:50%;
+             background: radial-gradient(circle, #3A3B40 0 55%, #2A2B2F 56% 100%);
+             box-shadow: 0 0 0 4px #0B0B0C, 0 10px 22px rgba(0,0,0,0.65), inset 0 0 0 1px rgba(255,255,255,0.06); }
+  .strobe { position:absolute; inset: 0; border-radius:50%; opacity: 0.55; pointer-events:none;
+            background: repeating-conic-gradient(rgba(255,255,255,0.55) 0 1.3deg, transparent 1.3deg 4.8deg);
+            -webkit-mask: radial-gradient(circle, transparent 73px, #000 74px, #000 78px, transparent 79px); mask: radial-gradient(circle, transparent 73px, #000 74px, #000 78px, transparent 79px); }
+  .platter.on .strobe { opacity: 0.9; }
+  .vinyl  { position:absolute; left: 10px; top: 10px; width: ${D}px; height: ${D}px; border-radius:50%;
             background: radial-gradient(circle at 32% 24%, rgba(255,255,255,0.07), transparent 58%),
-                        radial-gradient(circle at 68% 80%, rgba(0,0,0,0.6), transparent 55%),
-                        #0b0b0e; }
-  .groove { position:absolute; border-radius:50%; border:1px solid rgba(255,255,255,0.06);
-            top:50%; left:50%; transform:translate(-50%,-50%); }
-  .label  { position:absolute; top:50%; left:50%; width:${D * 0.41}px; height:${D * 0.41}px;
-            transform:translate(-50%,-50%); border-radius:50%; overflow:hidden;
-            display:flex; align-items:center; justify-content:center;
-            font-family:${mono}; font-size:8px; font-weight:700; letter-spacing:0.5px;
-            text-transform:uppercase; color:#fff;
-            box-shadow: inset 0 0 0 1.5px rgba(0,0,0,0.45),
-                        inset 3px 3px 6px rgba(255,255,255,0.35); }
+                        radial-gradient(circle at 68% 80%, rgba(0,0,0,0.6), transparent 55%), #0B0B0E;
+            box-shadow: 0 2px 6px rgba(0,0,0,0.7); }
+  .groove { position:absolute; border-radius:50%; border:1px solid rgba(255,255,255,0.06); top:50%; left:50%; transform:translate(-50%,-50%); }
+  .label  { position:absolute; top:50%; left:50%; width:${Math.round(D * 0.42)}px; height:${Math.round(D * 0.42)}px; transform:translate(-50%,-50%); border-radius:50%; overflow:hidden;
+            display:flex; align-items:center; justify-content:center; font: 700 8px/1 var(--cond); letter-spacing:1px; text-transform:uppercase; color:#fff;
+            box-shadow: inset 0 0 0 1.5px rgba(0,0,0,0.45), inset 3px 3px 6px rgba(255,255,255,0.3); }
   .art    { width:100%; height:100%; object-fit:cover; }
-  .sheen  { position:absolute; top:50%; left:50%; width:${D}px; height:${D}px;
-            transform:translate(-50%,-50%); border-radius:50%; pointer-events:none;
-            background: radial-gradient(120px at 30% 20%, rgba(255,255,255,0.22), transparent 55%),
-                        linear-gradient(125deg, rgba(255,255,255,0.10) 0%, transparent 38%); }
+  .spindle { position:absolute; top:50%; left:50%; width: 7px; height: 7px; margin: -3.5px 0 0 -3.5px; border-radius:50%; background: radial-gradient(circle at 40% 35%, #f2f2f2, #8a8c92 70%); box-shadow: 0 1px 2px rgba(0,0,0,0.8); z-index: 3; }
+  .sheen  { position:absolute; inset:0; border-radius:50%; pointer-events:none; background: radial-gradient(120px at 30% 20%, rgba(255,255,255,0.18), transparent 55%); }
+  .armbase { position:absolute; right: 24px; top: 22px; width: 36px; height: 36px; border-radius:50%; background: radial-gradient(circle at 40% 35%, #8E9096, #3C3E44 70%); box-shadow: 0 4px 8px rgba(0,0,0,0.6), inset 0 0 0 1px #111; }
+  .weight { position:absolute; right: 22px; top: 8px; width: 28px; height: 12px; border-radius: 6px; background: linear-gradient(180deg,#5C5E64,#2A2B2F); box-shadow: 0 2px 4px rgba(0,0,0,0.6); transform-origin: 100% 50%; }
+  .arm    { position:absolute; right: 40px; top: 40px; width: 4px; height: 122px; transform-origin: 50% 0; transform: rotate(var(--arm, -24deg)); transition: transform 1.6s cubic-bezier(.45,0,.2,1);
+            background: linear-gradient(90deg,#B7B9BF,#E9EAEE 50%,#8F9298); border-radius: 2px; box-shadow: 2px 3px 6px rgba(0,0,0,0.6); z-index: 4; }
+  .arm::after { content:""; position:absolute; left:-6px; bottom:-16px; width:16px; height:22px; border-radius: 3px; transform: rotate(-24deg); background: linear-gradient(180deg,#2C2D31,#0F0F11); box-shadow: 0 2px 4px rgba(0,0,0,0.6), inset 0 1px 0 rgba(255,255,255,0.12); }
+  .pitch  { position:absolute; right: 30px; top: 78px; width: 8px; height: 84px; border-radius:4px; background: #0A0A0B; box-shadow: inset 0 0 0 1px #2A2B2F; }
+  .pitch i { position:absolute; left:-8px; top: 36px; width: 24px; height: 12px; border-radius:2px; background: linear-gradient(180deg,#4A4C52,#1F2024); box-shadow: 0 2px 4px rgba(0,0,0,0.6), inset 0 1px 0 rgba(255,255,255,0.12); }
+  .pitch b { position:absolute; left: 12px; top: 40px; width: 4px; height: 4px; border-radius:50%; background:#f5561e; box-shadow: 0 0 4px #f5561e; }
+  .lbl    { position:absolute; font: 600 7px/1 var(--cond); letter-spacing: 1.6px; color: #7E8187; text-transform:uppercase; }
+  .brand  { position:absolute; left: 20px; bottom: 44px; font: 400 8px/1 "Michroma", sans-serif; letter-spacing: 2px; color: #8C8E95; }
+  .start  { position:absolute; left: 194px; top: 156px; width: 40px; height: 40px; border-radius:50%; cursor:pointer;
+            background: radial-gradient(circle at 40% 35%, #3A3B40, #1C1D20 70%); box-shadow: 0 3px 0 #08080A, 0 5px 8px rgba(0,0,0,0.6), inset 0 1px 0 rgba(255,255,255,0.12); transition: transform .05s, box-shadow .05s; }
+  .start:active { transform: translateY(3px); box-shadow: 0 0 0 #08080A, 0 1px 3px rgba(0,0,0,0.6), inset 0 1px 0 rgba(255,255,255,0.12); }
+  .start i { position:absolute; left: 50%; top: 50%; width: 10px; height: 3px; margin: -1.5px 0 0 -5px; border-radius: 2px; background: #2c2d31; }
+  .start.on i { background: #39D353; box-shadow: 0 0 6px #39D353; }
+  .r33, .r45 { position:absolute; width: 22px; height: 12px; border-radius: 2px; background: linear-gradient(180deg,#3A3B40,#202124); box-shadow: 0 2px 0 #08080a; font: 600 6px/12px var(--cond); color:#9a9ca3; text-align:center; letter-spacing: 0.5px; }
+  .r33 { left: 194px; top: 130px; } .r45 { left: 220px; top: 130px; }
+  .r33 b { position:absolute; left: 3px; top: -4px; width: 3px; height: 3px; border-radius:50%; background:#39D353; box-shadow: 0 0 3px #39D353; }
+  .info   { position:absolute; left: 20px; right: 20px; bottom: 12px; height: 26px; border-radius: 5px; background: #0A0A0B; box-shadow: inset 0 0 0 1px #26272B; padding: 0 10px; display:flex; align-items:center; gap: 10px; }
+  .info .t { flex:1; min-width:0; font: 600 11px/1 var(--cond); letter-spacing: 0.6px; color: #F1EDE3; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+  .info .a { flex:none; max-width: 42%; font: 600 8px/1 var(--cond); letter-spacing: 1.2px; color: #8C8E95; text-transform:uppercase; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+  .info .st { flex:none; width: 5px; height: 5px; border-radius:50%; background:#3a3b40; }
+  .info .st.on { background:#39D353; box-shadow: 0 0 5px #39D353; }
 `;
-
 const MOCK = {
   track: "Cassette Light", artist: "Field of Margins", album: "Halcyon · 2025",
   playing: true, art: null,
@@ -526,8 +549,8 @@ const ensureSpin = () => {
   window.__wsSpinTimer = setInterval(() => {
     const el = document.getElementById("ws-vinyl");
     if (!el) return;
-    // Always rotate (like the spinning globe), regardless of play state.
-    if (!REDUCED) window.__wsSpinAngle = (window.__wsSpinAngle + 1.5) % 360;
+    // Spin only while the platter is running (data-playing), like a real deck.
+    if (!REDUCED && el.dataset.playing === "1") window.__wsSpinAngle = (window.__wsSpinAngle + 1.5) % 360;
     el.style.transform = "rotate(" + window.__wsSpinAngle + "deg)";
   }, 16);
 };
@@ -548,42 +571,41 @@ const PermNotice = () =>
     },
   }, "Allow Übersicht to control Music in System Settings → Automation");
 
+// Start/stop pauses and resumes whichever player is running; the refresh
+// picks up the new state within two seconds and swings the arm.
+const PLAYPAUSE = `osascript -e 'if application "Spotify" is running then' -e 'tell application "Spotify" to playpause' -e 'else if application "Music" is running then' -e 'tell application "Music" to playpause' -e 'end if' >/dev/null 2>&1`;
 export const render = (props) => {
   if (isLoading(props)) return <Skel tint={T.tintPink} />;
-  // Permission blocked and nothing cached: tell the user how to fix it.
-  if ((props.output || "").trim() === "__PERM__" && !(recall("nowspinning") || {}).data) {
-    return <PermNotice />;
-  }
-  // Remember each track (with its cover); when playback stops, show the last
-  // known record sitting still rather than reverting to the mock.
+  if ((props.output || "").trim() === "__PERM__" && !(recall("nowspinning") || {}).data) return <PermNotice />;
   let m = parse(props.output);
-  if (m && m.art) {
-    remember("nowspinning", m);
-  } else if (!m) {
-    const cached = recall("nowspinning");
-    m = cached && cached.data ? { ...cached.data, playing: false } : MOCK;
-  }
+  if (m && m.art) remember("nowspinning", m);
+  else if (!m) { const cached = recall("nowspinning"); m = cached && cached.data ? { ...cached.data, playing: false } : MOCK; }
   const stamp = (m.album || m.track || "").split(" ")[0];
   ensureSpin();
-
   return (
-    <div aria-label={`Now playing: ${m.track} by ${m.artist}`}>
+    <div aria-label={`Now playing: ${m.track} by ${m.artist}`} style={{ "--arm": m.playing ? "13deg" : "-24deg" }}>
       <DragHandle k="nowSpinning" />
       <ResizeHandle k="nowSpinning" />
-      <div className="stage">
-        <div className="backlight" />
-        <div className="tilt">
-          <div id="ws-vinyl" className="vinyl">
-            <div className="groove" style={{ width: D * 0.88, height: D * 0.88 }} />
-            <div className="groove" style={{ width: D * 0.73, height: D * 0.73 }} />
-            <div className="groove" style={{ width: D * 0.58, height: D * 0.58 }} />
-            <div className="label" style={{ background: m.art ? "#000" : T.tintOrange }}>
-              {m.art ? <img className="art" src={artSrc(m)} /> : stamp}
-            </div>
-          </div>
+      <div className={`platter ${m.playing ? "on" : ""}`}>
+        <div className="strobe" />
+        <div id="ws-vinyl" className="vinyl" data-playing={m.playing ? "1" : "0"}>
+          <div className="groove" style={{ width: D * 0.9, height: D * 0.9 }} />
+          <div className="groove" style={{ width: D * 0.76, height: D * 0.76 }} />
+          <div className="groove" style={{ width: D * 0.62, height: D * 0.62 }} />
+          <div className="label" style={{ background: m.art ? "#000" : T.tintOrange }}>{m.art ? <img className="art" src={artSrc(m)} /> : stamp}</div>
           <div className="sheen" />
         </div>
+        <div className="spindle" />
       </div>
+      <div className="weight" /><div className="armbase" /><div className="arm" />
+      <span className="lbl" style={{ right: 22, top: 62 }}>Pitch</span>
+      <div className="pitch"><b /><i /></div>
+      <span className="lbl" style={{ left: 194, top: 118 }}>Speed</span>
+      <div className="r33"><b />33</div><div className="r45">45</div>
+      <div className={`start ${m.playing ? "on" : ""}`} title={m.playing ? "Pause" : "Play"} onClick={() => run(PLAYPAUSE)}><i /></div>
+      <span className="lbl" style={{ left: 240, top: 172 }}>Start<br />Stop</span>
+      <div className="brand">DIRECT DRIVE · NOW PLAYING</div>
+      <div className="info"><span className={`st ${m.playing ? "on" : ""}`} /><span className="t">{m.track}</span><span className="a">{m.artist}</span></div>
     </div>
   );
 };
