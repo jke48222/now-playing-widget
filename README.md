@@ -1,6 +1,6 @@
 # now-playing
 
-> The current track as a tilted, continuously spinning vinyl record.
+> The current track on a Braun-style record player: the record spins and the tonearm swings on while it plays.
 
 [![Release](https://img.shields.io/github/v/release/jke48222/now-playing-widget?label=release)](https://github.com/jke48222/now-playing-widget/releases/latest) [![License: MIT](https://img.shields.io/github/license/jke48222/now-playing-widget)](LICENSE) ![Platform: macOS](https://img.shields.io/badge/platform-macOS-lightgrey)
 
@@ -15,7 +15,7 @@ Music (MusicKit) API (below) for correct artwork and account-wide now-playing
 
 ![screenshot](media/screenshot.png)
 
-The widget is a direct-drive deck: a matte plinth with a bevelled edge, a platter with a strobe ring, the record as the mat with the sleeve for its label, a tonearm that swings onto the groove while something plays, a start/stop button that pauses and resumes the player, a pitch fader, and a slim readout strip. Typefaces: Michroma and Barlow Condensed. All fonts are under the SIL Open Font License; see `now-playing.widget/fonts/OFL.txt`.
+The widget is a Braun SK 4 style record player (Rams and Gugelot, 1956): a cream enamel case with elm-veneer sides, a grey platter under a clear acrylic lid, a straight tonearm that swings onto the record while something plays, five small keys (the on key really pauses and resumes the player), a tuning scale with a red pointer, a standby lamp, and a slotted grille beside the track readout. Typeface: Inter. All fonts are under the SIL Open Font License; see `now-playing.widget/fonts/OFL.txt`.
 
 ## Before and after
 

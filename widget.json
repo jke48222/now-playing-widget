@@ -1,6 +1,6 @@
 {
   "name": "now-playing",
-  "description": "The current track as a tilted, continuously spinning vinyl record.",
+  "description": "The current track on a Braun-style record player: the record spins and the tonearm swings on while it plays.",
   "author": "Jalen Edusei",
   "email": "jalen.edusei@gmail.com"
 }
