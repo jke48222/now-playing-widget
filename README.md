@@ -2,6 +2,10 @@
 
 > The current track as a tilted, continuously spinning vinyl record.
 
+[![Release](https://img.shields.io/github/v/release/jke48222/now-playing-widget?label=release)](https://github.com/jke48222/now-playing-widget/releases/latest) [![License: MIT](https://img.shields.io/github/license/jke48222/now-playing-widget)](LICENSE) ![Platform: macOS](https://img.shields.io/badge/platform-macOS-lightgrey)
+
+[Übersicht gallery](https://tracesof.net/uebersicht-widgets/) · [Widget suite](https://github.com/jke48222/widget-suite) · [Download](https://github.com/jke48222/now-playing-widget/releases/latest) · [Setup guide](docs/SETUP.md) · [Troubleshooting](docs/TROUBLESHOOTING.md)
+
 A widget for [Übersicht](http://tracesof.net/uebersicht/), self-contained in
 `index.jsx`. It auto-detects the active player — **Spotify or the macOS Music
 app** — via AppleScript (whichever is playing wins). Spotify needs no setup: its
@@ -13,21 +17,39 @@ Music (MusicKit) API (below) for correct artwork and account-wide now-playing
 
 ### On the desktop
 
-The widget shown running alongside the full set:
+The widget running alongside the full set:
 
-[![Homescreen demo — click to play](media/homescreen-poster.png)](media/homescreen.mp4)
+![The Übersicht widget suite running on a desktop](https://raw.githubusercontent.com/jke48222/widget-suite/main/homescreen.gif)
+
+[Full-resolution video](media/homescreen.mp4)
+
+## Requirements
+
+- macOS with [Übersicht](https://tracesof.net/uebersicht/) installed (`brew install --cask ubersicht`)
+- Optional: Apple Music / MusicKit (see below)
 
 ## Install
 
-1. Install and run [Übersicht](http://tracesof.net/uebersicht/).
-2. Unzip `now-playing.widget.zip`, or copy the `now-playing.widget` folder into
-   your Übersicht widgets directory:
-   `~/Library/Application Support/Übersicht/widgets/`
-3. Refresh Übersicht (menu bar icon -> Refresh All).
+If you don't have Übersicht yet:
+
+```sh
+brew install --cask ubersicht
+```
+
+**One-click.** Clone the repo and run the installer. It copies the widget into Übersicht's widgets folder, installs any helper scripts, and runs setup if the widget needs it. Safe to re-run.
+
+```sh
+git clone https://github.com/jke48222/now-playing-widget.git
+cd now-playing-widget && ./install.sh
+```
+
+**Manual.** Download `now-playing.widget.zip` from the [latest release](https://github.com/jke48222/now-playing-widget/releases/latest), unzip it, and put the `now-playing.widget` folder in `~/Library/Application Support/Übersicht/widgets/`. Then refresh Übersicht (menu bar icon → Refresh All).
 
 With no setup: Spotify works fully (cover from AppleScript), and the Music app
 shows the track with its cover resolved via the public iTunes Search API
 (best-effort). The MusicKit setup below only improves Music-app artwork.
+
+Blank widget? Run `./check.sh` for a pass/fail diagnosis, or see [docs/TROUBLESHOOTING.md](docs/TROUBLESHOOTING.md).
 
 ## Connect to Apple Music / MusicKit (optional, Music app only)
 
@@ -63,7 +85,7 @@ Note: `index.jsx` also checks an optional MediaRemote snapshot at
 own companion write for system-accurate artwork; none is included). If that file
 does not exist, the widget simply skips it — no action needed.
 
-## How to edit
+## Customization
 
 - Cover-art lookup order: the command string in `index.jsx`.
 - Spin speed / sizing: the constants and styles in `index.jsx`.
@@ -74,8 +96,12 @@ does not exist, the widget simply skips it — no action needed.
 - `now-playing.widget/index.jsx` — the widget
 - `setup/musickit-fetch.py` — optional Apple Music helper (no keys included)
 - `setup/musickit-setup.sh` — one-time MusicKit authorization helper
+- `install.sh` / `install.command` — one-click installer (copies the widget into Übersicht and installs any helpers)
+- `check.sh` — read-only setup diagnostics; prints pass/fail per item
 
-## Other widgets
+## Related widgets
+
+Part of the [Übersicht Widget Suite](https://github.com/jke48222/widget-suite): 12 widgets that share one design system.
 
 - [Animated Wallpaper](https://github.com/jke48222/animated-wallpaper-widget)
 - [Clipboard History](https://github.com/jke48222/clipboard-history-widget)
@@ -88,6 +114,10 @@ does not exist, the widget simply skips it — no action needed.
 - [Rotating 3D Model](https://github.com/jke48222/rotating-3d-model-widget)
 - [Spinning Globe](https://github.com/jke48222/spinning-globe-widget)
 - [Wallpaper Switcher](https://github.com/jke48222/wallpaper-switcher-widget)
+
+## License
+
+MIT. See [LICENSE](LICENSE).
 
 ## Author
 
